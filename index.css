@@ -1,0 +1,78 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: rgb(207, 204, 204);
+    display: grid;
+    place-items: center;
+    font-family: 'Tilt Warp', cursive;
+}
+
+h1 {
+    margin: 50px 0 50px 0;
+    font-size: 50px;
+    color: rgb(75, 75, 75);
+    
+}
+
+input {
+    margin-bottom: 20px;
+    padding: 5px;
+    font-size: 20px;
+}
+
+button {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.btn img{
+    width:95px;
+    display:none;
+}
+
+
+#cont {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+
+.btn {
+
+    font-size: 30px;
+    width: 100px;
+    height: 100px;
+    cursor: pointer;
+    margin: 0;
+    background-color: rgb(206, 203, 203);
+    border-radius: 10px;
+    
+
+}
+ img{
+    display: none; 
+}
+
+#find {
+    font-size: 25px;
+    color: white;
+    cursor: pointer;
+    padding: 7px;
+    border-radius: 10px;
+    width: 250px;
+    background-color: rgb(54, 53, 53);
+    
+}
+
+.btn:hover {
+    background-color: rgb(226, 228, 230);
+}
+
+
+
+p {
+    font-size: 20px;
+}

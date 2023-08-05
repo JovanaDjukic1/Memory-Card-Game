@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Card Game</title>
+   <link rel="stylesheet" href="index.css">
+    
+
+</head>
+
+<body>
+
+    <h1>Memory Card Game</h1>
+
+
+    <div style="display: flex; width: 1000px; position: relative;">
+        <p id="userCont">You : <span id="user"></span></p>
+        <p style="position: absolute; right: 0;" id="oppNameCont">Opponent : <span id="oppName"></span></p>
+
+    </div>
+    <br>
+    <p id="valueCont"> <span id="value"></span></p>
+    <br>
+    <p id="whosTurn"></p>
+    <div>
+        <p id="enterName">Enter your name : </p>
+
+        <input type="text" placeholder="Name" id="name" autocomplete="off">
+    </div>
+    <button id="find">Search for a player</button>
+    
+
+    <div id="container">
+        <div id="cont">
+
+            <button id="btn1" class="btn"><img id ="slika1" src="images/cuko.jpg"></button>
+            <button id="btn2" class="btn"><img id ="slika2" src="images/koka.jpg"></button>
+            <button id="btn3" class="btn"><img id ="slika3" src="images/konj.jpg"></button>
+            <button id="btn4" class="btn"><img id ="slika4" src="images/krava.jpg"></button>
+            <button id="btn5" class="btn"><img id ="slika5" src="images/lav.png"></button>
+            <button id="btn6" class="btn"><img id ="slika6" src="images/maca.jpg"></button>
+            <button id="btn7" class="btn"><img id ="slika7" src="images/ovca.jpg"></button>
+            <button id="btn8" class="btn"><img id ="slika8" src="images/patka.jpg"></button>
+            <button id="btn9" class="btn"><img id ="slika9" src="images/cuko.jpg"></button>
+            <button id="btn10" class="btn"><img id ="slika10" src="images/koka.jpg"></button>
+            <button id="btn11" class="btn"><img id ="slika11" src="images/konj.jpg"></button>
+            <button id="btn12" class="btn"><img id ="slika12" src="images/krava.jpg"></button>
+            <button id="btn13" class="btn"><img id ="slika13" src="images/lav.png"></button>
+            <button id="btn14" class="btn"><img id ="slika14" src="images/maca.jpg"></button>
+            <button id="btn15" class="btn"><img id ="slika15" src="images/ovca.jpg"></button>
+            <button id="btn16" class="btn"><img id="slika16" src="images/patka.jpg"></button>  
+
+        </div>
+    </div>
+    <div><p id="gameOver">Game over</p></div>
+    <div><p id = "win"></p></div>
+    
+
+
+</body>
+<script src="/socket.io/socket.io.js"></script>
+
+
+<script>
+    
+    document.getElementById("container").style.display = "none"
+    document.getElementById("userCont").style.display = "none"
+    document.getElementById("oppNameCont").style.display = "none"
+    document.getElementById("valueCont").style.display = "none"
+    document.getElementById("gameOver").style.display="none"
+
+    const socket = io();
+
+    let name;
+
+    document.getElementById('find').addEventListener("click", function () {
+        name = document.getElementById("name").value
+        document.getElementById("user").innerText = name
+        if (name == null || name == '') {
+            alert("Please enter a name")
+        }
+        else {
+
+            socket.emit("find", { name: name })
+
+            document.getElementById("find").disabled = true;
+
+        }
+    })
+
+
+
+    socket.on("find", (e) => {
+
+
+        let allPlayersArray = e.allPlayers
+        
+        const foundObject = allPlayersArray.find(obj => obj.p1.p1name == `${name}` || obj.p2.p2name == `${name}`);
+
+        if (name != '') {
+            document.getElementById("userCont").style.display = "block"
+            document.getElementById("oppNameCont").style.display = "block"
+            document.getElementById("valueCont").style.display = "block"
+            document.getElementById("name").style.display = "none"
+            document.getElementById("find").style.display = "none"
+            document.getElementById("enterName").style.display = "none"
+            document.getElementById("container").style.display = "block"
+            document.getElementById("whosTurn").style.display = "block"
+            document.getElementById("whosTurn").innerText = foundObject.p1.p1name+" is playing"
+
+        }
+
+        let oppName;
+        let value;
+
+       
+        foundObject.p1.p1name == `${name}` ? oppName = foundObject.p2.p2name : oppName = foundObject.p1.p1name
+        foundObject.p1.p1name == `${name}` ? value = foundObject.p1.p1value : value = foundObject.p2.p2value
+
+        document.getElementById("oppName").innerText = oppName
+        document.getElementById("value").innerText = value
+        document.getElementById("value").style.display="none";
+
+
+
+    })
+
+
+    document.querySelectorAll(".btn").forEach(e => {
+        e.addEventListener("click", function() {
+            e.querySelector('img').style.display='block';
+            let value = document.getElementById("value").innerText;
+
+            
+            socket.emit("playing", { value: value, id: e.id, name: `${name}` })
+
+             });  
+           
+         })
+       
+        
+        let result1 = 0;
+        let result2 = 0;
+        let arrayOfImages=[];
+        
+   
+
+
+    socket.on("playing", (e) => {
+        const foundObject = (e.allPlayers).find(obj => obj.p1.p1name == `${name}` || obj.p2.p2name == `${name}`);
+        p1id = foundObject.p1.p1move
+        p1id2= foundObject.p1.p1move2
+        p2id = foundObject.p2.p2move
+        p2id2 = foundObject.p2.p2move2
+        
+
+        if (((foundObject.sum) % 4 == 2) || ((foundObject.sum) % 4 == 3)) {
+        document.getElementById("whosTurn").innerText = foundObject.p2.p2name+" is playing"
+            
+            
+            if(foundObject.p1.p1name == `${name}`){
+                
+            document.getElementById('btn1').disabled=true;
+            document.getElementById('btn2').disabled=true;
+            document.getElementById('btn3').disabled=true;
+            document.getElementById('btn4').disabled=true;
+            document.getElementById('btn5').disabled=true;
+            document.getElementById('btn6').disabled=true;
+            document.getElementById('btn7').disabled=true;
+            document.getElementById('btn8').disabled=true;
+            document.getElementById('btn9').disabled=true;
+            document.getElementById('btn10').disabled=true;
+            document.getElementById('btn11').disabled=true;
+            document.getElementById('btn12').disabled=true;
+            document.getElementById('btn13').disabled=true;
+            document.getElementById('btn14').disabled=true;
+            document.getElementById('btn15').disabled=true;
+            document.getElementById('btn16').disabled=true;
+            
+            
+            }
+         else{
+            if( arrayOfImages.find(obj => obj=="btn1"))
+            document.getElementById('btn1').disabled=true;
+            else
+            document.getElementById('btn1').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn2"))
+            document.getElementById('btn2').disabled=true;
+            else
+            document.getElementById('btn2').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn3"))
+            document.getElementById('btn3').disabled=true;
+            else
+            document.getElementById('btn3').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn4"))
+            document.getElementById('btn4').disabled=true;
+            else
+            document.getElementById('btn4').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn5"))
+            document.getElementById('btn5').disabled=true;
+            else
+            document.getElementById('btn5').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn6"))
+            document.getElementById('btn6').disabled=true;
+            else
+            document.getElementById('btn6').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn7"))
+            document.getElementById('btn7').disabled=true;
+            else
+            document.getElementById('btn7').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn8"))
+            document.getElementById('btn8').disabled=true;
+            else
+            document.getElementById('btn8').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn9"))
+            document.getElementById('btn9').disabled=true;
+            else
+            document.getElementById('btn9').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn10"))
+            document.getElementById('btn10').disabled=true;
+            else
+            document.getElementById('btn10').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn11"))
+            document.getElementById('btn11').disabled=true;
+            else
+            document.getElementById('btn11').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn12"))
+            document.getElementById('btn12').disabled=true;
+            else
+            document.getElementById('btn12').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn13"))
+            document.getElementById('btn13').disabled=true;
+            else
+            document.getElementById('btn13').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn14"))
+            document.getElementById('btn14').disabled=true;
+            else
+            document.getElementById('btn14').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn15"))
+            document.getElementById('btn15').disabled=true;
+            else
+            document.getElementById('btn15').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn16"))
+            document.getElementById('btn16').disabled=true;
+            else
+            document.getElementById('btn16').disabled=false;
+
+            
+
+            }
+        }
+
+        else {
+        document.getElementById("whosTurn").innerText = foundObject.p1.p1name+" is playing"
+            
+            if(foundObject.p2.p2name == `${name}`){
+            
+            document.getElementById('btn1').disabled=true;
+            document.getElementById('btn2').disabled=true;
+            document.getElementById('btn3').disabled=true;
+            document.getElementById('btn4').disabled=true;
+            document.getElementById('btn5').disabled=true;
+            document.getElementById('btn6').disabled=true;
+            document.getElementById('btn7').disabled=true;
+            document.getElementById('btn8').disabled=true;
+            document.getElementById('btn9').disabled=true;
+            document.getElementById('btn10').disabled=true;
+            document.getElementById('btn11').disabled=true;
+            document.getElementById('btn12').disabled=true;
+            document.getElementById('btn13').disabled=true;
+            document.getElementById('btn14').disabled=true;
+            document.getElementById('btn15').disabled=true;
+            document.getElementById('btn16').disabled=true;
+
+
+           }
+            
+           else{
+                if( arrayOfImages.find(obj => obj=="btn1"))
+            document.getElementById('btn1').disabled=true;
+            else
+            document.getElementById('btn1').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn2"))
+            document.getElementById('btn2').disabled=true;
+            else
+            document.getElementById('btn2').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn3"))
+            document.getElementById('btn3').disabled=true;
+            else
+            document.getElementById('btn3').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn4"))
+            document.getElementById('btn4').disabled=true;
+            else
+            document.getElementById('btn4').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn5"))
+            document.getElementById('btn5').disabled=true;
+            else
+            document.getElementById('btn5').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn6"))
+            document.getElementById('btn6').disabled=true;
+            else
+            document.getElementById('btn6').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn7"))
+            document.getElementById('btn7').disabled=true;
+            else
+            document.getElementById('btn7').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn8"))
+            document.getElementById('btn8').disabled=true;
+            else
+            document.getElementById('btn8').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn9"))
+            document.getElementById('btn9').disabled=true;
+            else
+            document.getElementById('btn9').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn10"))
+            document.getElementById('btn10').disabled=true;
+            else
+            document.getElementById('btn10').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn11"))
+            document.getElementById('btn11').disabled=true;
+            else
+            document.getElementById('btn11').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn12"))
+            document.getElementById('btn12').disabled=true;
+            else
+            document.getElementById('btn12').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn13"))
+            document.getElementById('btn13').disabled=true;
+            else
+            document.getElementById('btn13').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn14"))
+            document.getElementById('btn14').disabled=true;
+            else
+            document.getElementById('btn14').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn15"))
+            document.getElementById('btn15').disabled=true;
+            else
+            document.getElementById('btn15').disabled=false;
+            if( arrayOfImages.find(obj => obj=="btn16"))
+            document.getElementById('btn16').disabled=true;
+            else
+            document.getElementById('btn16').disabled=false;
+
+            }
+        }
+       
+
+        if (p1id == 'btn1' || p1id2 == "btn1") {
+            document.getElementById('slika1').style.display='block';
+        }
+        if (p1id == 'btn2' || p1id2 == 'btn2') {
+            document.getElementById('slika2').style.display='block';
+        }
+        if (p1id == 'btn3' || p1id2 == 'btn3') {
+            document.getElementById('slika3').style.display='block';
+        }
+        if (p1id == 'btn4' || p1id2 == 'btn4') {
+            document.getElementById('slika4').style.display='block';
+        }
+        if (p1id == 'btn5' || p1id2 == 'btn5') {
+            document.getElementById('slika5').style.display='block';
+        }
+        if (p1id == 'btn6' || p1id2 == 'btn6') {
+            document.getElementById('slika6').style.display='block';
+        }
+        if (p1id == 'btn7' || p1id2 == 'btn7') {
+            document.getElementById('slika7').style.display='block';
+        }
+        if (p1id == 'btn8' || p1id2 == 'btn8') {
+            document.getElementById('slika8').style.display='block';
+        }
+        if (p1id == 'btn9' || p1id2 == 'btn9') {
+            document.getElementById('slika9').style.display='block';
+        }
+        if (p1id == 'btn10' || p1id2 == 'btn10') {
+            document.getElementById('slika10').style.display='block';
+        }
+        if (p1id == 'btn11' || p1id2 == 'btn11') {
+            document.getElementById('slika11').style.display='block';
+        }
+        if (p1id == 'btn12' || p1id2 == 'btn12') {
+            document.getElementById('slika12').style.display='block';
+        }
+        if (p1id == 'btn13' || p1id2 == 'btn13') {
+            document.getElementById('slika13').style.display='block';
+        }
+        if (p1id == 'btn14' || p1id2 == 'btn14') {
+            document.getElementById('slika14').style.display='block';
+        }
+        if (p1id == 'btn15' || p1id2 == 'btn15') {
+            document.getElementById('slika15').style.display='block';
+        }
+        if (p1id == 'btn16' || p1id2 == 'btn16') {
+            document.getElementById('slika16').style.display='block';
+        }
+        
+        if(p1id && p1id2){
+            console.log("p1id"+p1id);
+            console.log("p1id2"+p1id2);
+
+       if(document.getElementById(p1id).querySelector('img').src==document.getElementById(p1id2).querySelector('img').src){
+        
+        document.getElementById(p1id).querySelector('img').disabled=true;
+        document.getElementById(p1id2).querySelector('img').disabled=true;
+        arrayOfImages.push(p1id);
+        arrayOfImages.push(p1id2);
+        document.getElementById(`${p1id}`).disabled=true;
+        document.getElementById(`${p1id2}`).disabled=true;
+
+        result1++;
+        
+    if(result1+result2==8){
+    document.getElementById("gameOver").style.display="block";
+    document.getElementById("whosTurn").style.display = "none";
+
+    if(result1 > result2){
+    document.getElementById("win").innerText = foundObject.p1.p1name+" player win"
+     }
+     else if(result1 < result2){
+        document.getElementById("win").innerText = foundObject.p2.p2name+ " player win"
+     }
+     else {
+        document.getElementById("win").innerText = "it's a tie"
+     }
+    }
+        }
+
+       else{
+        setTimeout(() => {
+            
+        document.getElementById(p1id).querySelector('img').style.display='none';
+        document.getElementById(p1id2).querySelector('img').style.display='none';
+        p1id="";
+        p1id2="";
+      
+      }, 400);
+        
+
+       }
+       
+    }
+    
+       if (p2id == 'btn1' || p2id2 == 'btn1') {
+           document.getElementById('slika1').style.display='block';
+        }
+        if (p2id == 'btn2' || p2id2 == 'btn2') {
+            document.getElementById('slika2').style.display='block';
+        }
+        if (p2id == 'btn3' || p2id2 == 'btn3') {
+           document.getElementById('slika3').style.display='block';
+        }
+        if (p2id == 'btn4' || p2id2 == 'btn4') {
+           document.getElementById('slika4').style.display='block';
+        }
+        if (p2id == 'btn5' || p2id2 == 'btn5') {
+           document.getElementById('slika5').style.display='block';
+        }
+        if (p2id == 'btn6' || p2id2 == 'btn6') {
+           document.getElementById('slika6').style.display='block';
+        }
+        if (p2id == 'btn7' || p2id2 == 'btn7') {
+           document.getElementById('slika7').style.display='block';
+        }
+        if (p2id == 'btn8' || p2id2 == 'btn8') {
+           document.getElementById('slika8').style.display='block';
+        }
+        if (p2id == 'btn9' || p2id2 == 'btn9') {
+           document.getElementById('slika9').style.display='block';
+        }
+        if (p2id == 'btn10' || p2id2 == 'btn10') {
+           document.getElementById('slika10').style.display='block';
+        }
+        if (p2id == 'btn11' || p2id2 == 'btn11') {
+           document.getElementById('slika11').style.display='block';
+        }
+        if (p2id == 'btn12' || p2id2 == 'btn12') {
+           document.getElementById('slika12').style.display='block';
+        }
+        if (p2id == 'btn13' || p2id2 == 'btn13') {
+           document.getElementById('slika13').style.display='block';
+        }
+        if (p2id == 'btn14' || p2id2 == 'btn14') {
+           document.getElementById('slika14').style.display='block';
+        }
+        if (p2id == 'btn15' || p2id2 == 'btn15') {
+           document.getElementById('slika15').style.display='block';
+        }
+        if (p2id == 'btn16' || p2id2 == 'btn16') {
+           document.getElementById('slika16').style.display='block';
+        }
+        if(p2id && p2id2){
+           
+       if(document.getElementById(p2id).querySelector('img').src==document.getElementById(p2id2).querySelector('img').src){
+        
+        document.getElementById(p2id).querySelector('img').disabled=true;
+        document.getElementById(p2id2).querySelector('img').disabled=true;
+        arrayOfImages.push(p2id);
+        arrayOfImages.push(p2id2);
+        document.getElementById(`${p2id}`).disabled=true;
+        document.getElementById(`${p2id2}`).disabled=true;
+
+
+        result2++;
+        
+        if(result1+result2==8){
+        
+    document.getElementById("gameOver").style.display="block";
+    document.getElementById("whosTurn").style.display = "none";
+    if(result1 > result2){
+    document.getElementById("win").innerText = foundObject.p1.p1name+" player win"
+     }
+     else if(result1 < result2){
+        document.getElementById("win").innerText = foundObject.p2.p2name+ " player win"
+     }
+     else {
+        document.getElementById("win").innerText = "it's a tie"
+     }
+    }
+        }
+       else{
+        setTimeout(() => { 
+            
+            document.getElementById(p2id).querySelector('img').style.display='none';
+        document.getElementById(p2id2).querySelector('img').style.display='none';
+        p2id="";
+        p2id2="";
+      
+      }, 400);
+        
+
+       }
+    }
+    
+      })
+
+    
+
+
+
+
+
+
+
+
+
+
+    
+        
+        
+        
+
+    
+
+
+
+
+
+
+              
+
+    
+
+
+
+
+    
+   
+
+
+
+</script>
+
+</html>
